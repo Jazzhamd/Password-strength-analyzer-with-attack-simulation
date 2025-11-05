@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Password Strength</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      crossorigin="anonymous"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        background: #f5f7fa;
+        font-family: "Inter", "Segoe UI", sans-serif;
+        color: #333;
+        margin: 0;
+      }
+
+      h1,
+      h3,
+      h4 {
+        font-weight: 600;
+      }
+
+      .container {
+        max-width: 700px;
+        margin-top: 5rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 3rem;
+      }
+
+      label {
+        font-weight: 500;
+        color: #444;
+      }
+
+      .btn-success,
+      .btn-warning {
+        border-radius: 6px;
+        font-weight: 500;
+        padding: 0.6rem 1.2rem;
+        transition: all 0.3s ease;
+      }
+
+      .btn-success:hover {
+        background-color: #28a745d1;
+      }
+
+      .btn-warning:hover {
+        background-color: #ffc107d1;
+      }
+
+      .result-section {
+        background: #f9fafc;
+        border: 1px solid #e5e9f0;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .suggestion-box {
+        background: #eafcf3;
+        border-left: 4px solid #57ffab;
+        padding: 0.8rem;
+        margin: 0.5rem 0;
+        border-radius: 4px;
+        color: #225d3b;
+      }
+
+      .generated-password {
+        background: #fff9e6;
+        border: 1px solid #ffd700;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .copy-btn {
+        background: #ffd700;
+        color: #333;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+
+      .copy-btn:hover {
+        background: #ffeb66;
+        transform: scale(1.05);
+      }
+
+      .strength-strong {
+        color: #28a745;
+      }
+      .strength-moderate {
+        color: #ffc107;
+      }
+      .strength-weak {
+        color: #dc3545;
+      }
+
+      .crack-time-section {
+        background: white;
+        border: 2px solid #e5e9f0;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 300px;
+        margin-top: 1rem;
+      }
+
+      .additional-times {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+      }
+
+      .time-card {
+        background: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 6px;
+        border-left: 3px solid #3498db;
+      }
+
+      .time-card strong {
+        display: block;
+        color: #666;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .time-card .value {
+        color: #333;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .attack-sim-section {
+        background: #fff4e6;
+        border: 2px solid #ffa500;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .sim-btn {
+        background: #ff8c00;
+        color: white;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        width: 100%;
+      }
+
+      .sim-btn:hover:not(:disabled) {
+        background: #ff7700;
+        transform: scale(1.02);
+      }
+
+      .sim-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .progress-container {
+        margin-top: 1rem;
+        display: none;
+      }
+
+      .progress {
+        height: 25px;
+        border-radius: 6px;
+      }
+
+      .progress-bar {
+        background: linear-gradient(90deg, #ff8c00, #ffa500);
+        transition: width 0.3s ease;
+      }
+
+      .sim-results {
+        margin-top: 1.5rem;
+        display: none;
+      }
+
+      .result-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .result-card {
+        background: white;
+        border: 2px solid #e5e9f0;
+        border-radius: 8px;
+        padding: 1rem;
+      }
+
+      .result-card.found {
+        border-color: #dc3545;
+        background: #ffe6e6;
+      }
+
+      .result-card.not-found {
+        border-color: #28a745;
+        background: #e6ffe6;
+      }
+
+      .result-card h5 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .result-card .stat {
+        font-size: 0.85rem;
+        margin: 0.25rem 0;
+        color: #555;
+      }
+
+      .result-card .stat strong {
+        color: #333;
+      }
+
+      .notes-section {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        color: #666;
+      }
+
+      .notes-section ul {
+        margin: 0.5rem 0 0 0;
+        padding-left: 1.5rem;
+      }
+
+      footer {
+        text-align: center;
+        color: #666;
+        margin-top: 3rem;
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="d-flex justify-content-center align-items-start min-vh-100">
+      <div class="container">
+        <h1 class="text-center mb-4 text-dark">Password Strength Checker</h1>
+
+        <form action="/check" method="POST">
+          <label for="pwd">Enter your password</label>
+          <div class="input-group">
+            <input
+              type="password"
+              class="form-control"
+              name="pwd"
+              id="pwd"
+              placeholder="Type your password here..."
+              value="{{ request.form.get('pwd', '') }}"
+              required
+            />
+            <div class="input-group-append">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                id="togglePassword"
+              >
+                Show
+              </button>
+            </div>
+          </div>
+          <input
+            type="submit"
+            class="btn btn-success float-right mt-3"
+            value="Check Strength"
+            id="calc_btn"
+          />
+        </form>
+
+        <form action="/generate" method="POST" class="mt-2">
+          <input
+            type="submit"
+            class="btn btn-warning float-right"
+            style="margin-top: 9px; margin-right: 10px"
+            value="Generate Secure Password"
+          />
+        </form>
+
+        <div class="clearfix"></div>
+
+        {% if sum or api_message or suggestions or generated_password %}
+        <div class="result-section mt-4">
+          {% if sum %}
+          <h3>
+            Password Strength:
+            <span
+              class="{% if 'Strong' in sum %}strength-strong{% elif 'Moderate' in sum %}strength-moderate{% else %}strength-weak{% endif %}"
+            >
+              {{ sum }}
+            </span>
+          </h3>
+          {% endif %} {% if api_message %}
+          <h4 class="mt-3">HIBP Check: {{ api_message }}</h4>
+          {% endif %} {% if est_raw %}
+          <div class="crack-time-section">
+            <h4>Estimated Crack Times</h4>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem">
+              Time required to crack this password using different attack
+              methods
+            </p>
+            <div class="chart-container">
+              <canvas id="crackChart"></canvas>
+            </div>
+            <div class="additional-times">
+              {% if brute_gpu %}
+              <div class="time-card">
+                <strong>Specific charset(Single GPU)</strong>
+                <div class="value">{{ brute_gpu }}</div>
+              </div>
+              {% endif %} {% if brute_cons_gpu %}
+              <div class="time-card">
+                <strong>Conservative charset(Single GPU)</strong>
+                <div class="value">{{ brute_cons_gpu }}</div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %} {% if suggestions %}
+          <h4 class="mt-4">Suggestions:</h4>
+          {% for suggestion in suggestions %}
+          <div class="suggestion-box">{{ suggestion }}</div>
+          {% endfor %} {% endif %} {% if sum %}
+          <div class="attack-sim-section">
+            <h4 style="color: #ff8c00; margin-bottom: 0.5rem">
+              Attack Simulation
+            </h4>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem">
+              Test how your password performs against dictionary and mask-based
+              attacks
+            </p>
+            <button class="sim-btn" id="simulateBtn" onclick="runSimulation()">
+              Run Attack Simulation
+            </button>
+
+            <div class="progress-container" id="progressContainer">
+              <div class="progress">
+                <div
+                  class="progress-bar progress-bar-striped progress-bar-animated"
+                  id="progressBar"
+                  role="progressbar"
+                  style="width: 0%"
+                >
+                  <span id="progressText">Starting...</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="sim-results" id="simResults">
+              <h5 style="margin-bottom: 1rem">Simulation Results</h5>
+              <div
+                id="simSummary"
+                style="
+                  padding: 0.75rem;
+                  background: #f8f9fa;
+                  border-radius: 6px;
+                  margin-bottom: 1rem;
+                  font-weight: 500;
+                "
+              ></div>
+
+              <div class="result-grid">
+                <div class="result-card" id="dictCard">
+                  <h5>Dictionary Attack</h5>
+                  <div id="dictResults"></div>
+                </div>
+                <div class="result-card" id="maskCard">
+                  <h5>Mask Attack</h5>
+                  <div id="maskResults"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %} {% if generated_password %}
+          <h4 class="mt-4 text-warning">Generated Secure Password:</h4>
+          <div class="generated-password">
+            <input
+              type="text"
+              id="generatedPwd"
+              value="{{ generated_password }}"
+              readonly
+              style="
+                background: transparent;
+                border: none;
+                color: #b8860b;
+                font-size: 1.2rem;
+                font-family: 'Courier New', monospace;
+                width: 75%;
+                outline: none;
+              "
+            />
+            <button class="copy-btn" onclick="copyPasswordSimple()">
+              Copy
+            </button>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <script>
+            function copyPasswordSimple() {
+              const passwordInput = document.getElementById("generatedPwd");
+              const btn = event.target;
+              const originalText = btn.innerText;
+              passwordInput.select();
+              passwordInput.setSelectionRange(0, 99999);
+              document.execCommand("copy");
+              btn.innerText = "✓ Copied!";
+              btn.style.background = "#57ffab";
+              setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "#ffd700";
+              }, 2000);
+              window.getSelection().removeAllRanges();
+            }
+
+            {% if est_raw %}
+            (function renderCrackChart() {
+              try {
+                const estRaw = JSON.parse('{{ est_raw | safe }}');
+
+                if (!estRaw || !estRaw.zxcvbn || !estRaw.zxcvbn.crack_times_seconds) {
+                  console.log('No crack time data available');
+                  return;
+                }
+
+                const secs = estRaw.zxcvbn.crack_times_seconds;
+                const labels = [];
+                const values = [];
+                const colors = [];
+
+                const labelMap = {
+                  'online_throttling_100_per_hour': 'Online (Throttled)',
+                  'online_no_throttling_10_per_second': 'Online (Unthrottled)',
+                  'offline_slow_hashing_1e4_per_second': 'Offline (Slow Hash)',
+                  'offline_fast_hashing_1e10_per_second': 'Offline (Fast Hash)'
+                };
+
+                const colorMap = {
+                  'online_throttling_100_per_hour': '#28a745',
+                  'online_no_throttling_10_per_second': '#ffc107',
+                  'offline_slow_hashing_1e4_per_second': '#fd7e14',
+                  'offline_fast_hashing_1e10_per_second': '#dc3545'
+                };
+
+                for (const key in secs) {
+                  if (secs.hasOwnProperty(key)) {
+                    const value = secs[key];
+                    if (typeof value === 'number' && isFinite(value) && value > 0) {
+                      labels.push(labelMap[key] || key);
+                      values.push(value);
+                      colors.push(colorMap[key] || '#3498db');
+                    }
+                  }
+                }
+
+                if (labels.length === 0) {
+                  console.log('No valid crack time values');
+                  return;
+                }
+
+                const ctx = document.getElementById('crackChart').getContext('2d');
+                new Chart(ctx, {
+                  type: 'bar',
+                  data: {
+                    labels: labels,
+                    datasets: [{
+                      label: 'Time (seconds)',
+                      data: values,
+                      backgroundColor: colors,
+                      borderRadius: 6,
+                      barThickness: 40
+                    }]
+                  },
+                  options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      x: {
+                        type: 'logarithmic',
+                        title: {
+                          display: true,
+                          text: 'Time (log scale)'
+                        },
+                        ticks: {
+                          callback: function(value) {
+                            if (value >= 3600*24*365) return Math.round(value/(3600*24*365)) + ' years';
+                            if (value >= 3600*24*30) return Math.round(value/(3600*24*30)) + ' months';
+                            if (value >= 3600*24) return Math.round(value/(3600*24)) + ' days';
+                            if (value >= 3600) return Math.round(value/3600) + ' hrs';
+                            if (value >= 60) return Math.round(value/60) + ' min';
+                            return Math.round(value) + ' sec';
+                          }
+                        }
+                      },
+                      y: {
+                        beginAtZero: true
+                      }
+                    },
+                    plugins: {
+                      legend: {
+                        display: false
+                      },
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            const value = context.parsed.x;
+                            if (value >= 3600*24*365) {
+                              return (value/(3600*24*365)).toFixed(2) + ' years';
+                            }
+                            if (value >= 3600*24*30) {
+                              return (value/(3600*24*30)).toFixed(2) + ' months';
+                            }
+                            if (value >= 3600*24) {
+                              return (value/(3600*24)).toFixed(2) + ' days';
+                            }
+                            if (value >= 3600) {
+                              return (value/3600).toFixed(2) + ' hours';
+                            }
+                            if (value >= 60) {
+                              return (value/60).toFixed(2) + ' minutes';
+                            }
+                            return value.toFixed(2) + ' seconds';
+                          }
+                        }
+                      }
+                    }
+                  }
+                });
+              } catch(e) {
+                console.error('Chart rendering failed:', e);
+              }
+            })();
+            {% endif %}
+
+            async function runSimulation() {
+              const btn = document.getElementById('simulateBtn');
+              const progressContainer = document.getElementById('progressContainer');
+              const progressBar = document.getElementById('progressBar');
+              const progressText = document.getElementById('progressText');
+              const simResults = document.getElementById('simResults');
+              const password = document.getElementById('pwd').value;
+
+              if (!password) {
+                alert('Please enter a password first');
+                return;
+              }
+
+              btn.disabled = true;
+              btn.textContent = 'Running...';
+              progressContainer.style.display = 'block';
+              simResults.style.display = 'none';
+
+              progressBar.style.width = '30%';
+              progressText.textContent = 'Initializing attack simulation...';
+
+              try {
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                progressBar.style.width = '60%';
+                progressText.textContent = 'Running dictionary attack...';
+
+                const response = await fetch('/simulate_crack', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ password: password })
+                });
+
+                if (!response.ok) {
+                  throw new Error('Simulation failed');
+                }
+
+                progressBar.style.width = '90%';
+                progressText.textContent = 'Processing results...';
+
+                const data = await response.json();
+
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Complete!';
+
+                displayResults(data);
+
+                setTimeout(() => {
+                  progressContainer.style.display = 'none';
+                  progressBar.style.width = '0%';
+                }, 1000);
+
+              } catch (error) {
+                alert('Simulation error: ' + error.message);
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+              } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Attack Simulation';
+              }
+            }
+
+            function displayResults(data) {
+              const simResults = document.getElementById('simResults');
+              const simSummary = document.getElementById('simSummary');
+              const dictCard = document.getElementById('dictCard');
+              const maskCard = document.getElementById('maskCard');
+              const dictResults = document.getElementById('dictResults');
+              const maskResults = document.getElementById('maskResults');
+              const notesSection = document.getElementById('notesSection');
+
+              const dictFound = data.dictionary && data.dictionary.found;
+              const maskFound = data.mask && data.mask.found;
+
+              if (dictFound || maskFound) {
+                simSummary.innerHTML = ' <strong>Warning:</strong> Password was cracked by one or more attacks!';
+                simSummary.style.background = '#ffe6e6';
+                simSummary.style.color = '#dc3545';
+              } else {
+                simSummary.innerHTML = ' Password survived the simulation attacks (within test limits)';
+                simSummary.style.background = '#e6ffe6';
+                simSummary.style.color = '#28a745';
+              }
+
+              if (data.dictionary) {
+                const d = data.dictionary;
+                dictCard.className = 'result-card ' + (d.found ? 'found' : 'not-found');
+
+                let html = '';
+                html += `<div class="stat"><strong>Status:</strong> ${d.found ? ' Found' : ' Not Found'}</div>`;
+                html += `<div class="stat"><strong>Attempts:</strong> ${d.tries.toLocaleString()}</div>`;
+                html += `<div class="stat"><strong>Time:</strong> ${d.time.toFixed(3)} seconds</div>`;
+                if (d.skipped) {
+                  html += `<div class="stat" style="color: #ffc107;"> Skipped (wordlist unavailable)</div>`;
+                }
+                dictResults.innerHTML = html;
+              }
+
+              if (data.mask) {
+                const m = data.mask;
+                maskCard.className = 'result-card ' + (m.found ? 'found' : 'not-found');
+
+                let html = '';
+                html += `<div class="stat"><strong>Status:</strong> ${m.found ? ' Found' : ' Not Found'}</div>`;
+                html += `<div class="stat"><strong>Attempts:</strong> ${m.tries.toLocaleString()}</div>`;
+                html += `<div class="stat"><strong>Time:</strong> ${m.time.toFixed(3)} seconds</div>`;
+                if (m.skipped) {
+                  html += `<div class="stat" style="color: #ffc107;"> ${m.reason || 'Skipped'}</div>`;
+                }
+                maskResults.innerHTML = html;
+              }
+
+
+              simResults.style.display = 'block';
+            }
+        document.getElementById("togglePassword").addEventListener("click", function () {
+        const pwd = document.getElementById("pwd");
+        const btn = this;
+        if (pwd.type === "password") {
+          pwd.type = "text";
+          btn.textContent = "Hide";
+        } else {
+          pwd.type = "password";
+          btn.textContent = "Show";
+        }
+      });
+    </script>
+  </body>
+</html>
