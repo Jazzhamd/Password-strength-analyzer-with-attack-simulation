@@ -1,6 +1,6 @@
 # Password-Strength-Analyzer-And-Attack-Simulator
 
-<div align="center">
+<div>
  
 [![](https://img.shields.io/badge/Python-02569B?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/en/2.0.x/)
